@@ -1,0 +1,40 @@
+// App.js
+import React, { useState, useEffect } from 'react';
+
+function App() {
+  const [isRunning, setIsRunning] = useState(false);
+  const [currentBet, setCurrentBet] = useState(1000);
+
+  useEffect(() => {
+    if (isRunning) {
+      const interval = setInterval(async () => {
+        try {
+          const response = await fetch('http://localhost:3000/api/placeBet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ betAmount: currentBet }),
+          });
+          const data = await response.json();
+          setCurrentBet(data.newBetAmount);
+          console.log(`Bet placed successfully! Current Bet: ${data.newBetAmount}`);
+        } catch (error) {
+          console.error("Bet failed:", error);
+        }
+      }, 1000);
+
+      return () => clearInterval(interval); // Clear interval when stopped
+    }
+  }, [isRunning, currentBet]);
+
+  return (
+    <div className="App">
+      <h1>Crash Game Bet Simulation</h1>
+      <p>Current Bet Amount: {currentBet} Naira</p>
+      <button onClick={() => setIsRunning(!isRunning)}>
+        {isRunning ? 'Stop' : 'Start'}
+      </button>
+    </div>
+  );
+}
+
+export default App;
